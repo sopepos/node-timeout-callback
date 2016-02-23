@@ -1,22 +1,47 @@
 'use string';
 
-module.exports = function(timeout,callback){
+/**
+ * @param {function|undefined} cbAfterTimedOut (optional) called when original
+ *     callback is called after already timed out.
+ *     Use cbAfterTimedOut for logging purpose only.
+ */
+function makeCallback(timeoutMs, callback, cbAfterTimedOut) {
     var called = false;
-    if(typeof timeout === 'function'){
-        callback = timeout;
-        timeout = 30*1000;
-    }
+    var timedOut = false;
 
-    var interval = setTimeout(function(){
-        if(called)return;
-        called = true;
+    if(typeof timeoutMs === 'function'){
+        cbAfterTimedOut = callback;
+        callback = timeoutMs;
+        timeoutMs = 30 * 1000;
+    }
+    cbAfterTimedOut = cbAfterTimedOut || function () {};
+
+    var timer = setTimeout(function onTimeout() {
+        if (called)
+            return;
+
+        timedOut = true;
+        timer = undefined;
+
         callback(new Error('callback timeout'));
-    },timeout);
+    }, timeoutMs);
 
-    return function(){
-        if(called)return;
+    return function cbWrapper() {
+        if (called)
+            return;
+
         called = true;
-        clearTimeout(interval);
-        callback.apply(this,arguments);
-    }
+
+        if(timedOut) {
+            cbAfterTimedOut.apply(this, arguments);
+            return;
+        }
+
+        clearTimeout(timer);
+        timer = undefined;
+
+        callback.apply(this, arguments);
+    };
 }
+
+module.exports = makeCallback;
