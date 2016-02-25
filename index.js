@@ -1,4 +1,4 @@
-'use string';
+'use strict';
 
 /**
  * @param {function|undefined} cbAfterTimedOut (optional) called when original
