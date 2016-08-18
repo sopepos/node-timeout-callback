@@ -1,0 +1,13 @@
+{
+    "node" : true,
+    "esnext" : false,
+    "proto" : true,
+    "globals": {
+        "global": true,
+        "process": false,
+        "before": false,
+        "after": false,
+        "it": false,
+        "describe": false
+    }
+}
